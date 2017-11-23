@@ -341,11 +341,13 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
             cboActivity.setVisible(true);
             cboActivity.setEnabled(true);
             loadActivity(idAchivement[pos]);
+            loadTableAchievements(idAchivement[pos]);
         }else if(cboAchievements.getSelectedIndex() == 0){                                   
             cboActivity.removeAllItems();
             cboActivity.setEnabled(false);
             cboActivity.setVisible(false);
             jLabel6.setVisible(false);
+            model.setRowCount(0);
         }       
     }//GEN-LAST:event_cboAchievementsItemStateChanged
 
@@ -359,6 +361,8 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
         if(cboActivity.getSelectedIndex() > 0){
             int pos = cboActivity.getSelectedIndex();
             loadTableActivity(idActivity[pos]);
+        }else if(cboActivity.getSelectedIndex() == 0){
+            model.setRowCount(0);
         }    
     }//GEN-LAST:event_cboActivityItemStateChanged
 void loadGroup(int code){
@@ -512,6 +516,46 @@ void loadTableActivity(String id){
             reg[0] = rs.getString("usu.NUIP");
             reg[1] = rs.getString("Nombre");
             reg[2] = rs.getString("na.Calificacion");
+            
+            model.addRow(reg);
+        }
+        tbData.setModel(model);
+        columnModel.getColumn(2).setPreferredWidth(5);
+        columnModel.getColumn(0).setPreferredWidth(20);
+    } catch (Exception e) {
+    }
+ 
+}
+
+void loadTableAchievements(String id){   
+    String reg[] = new String[3];    
+ model.setRowCount(0);
+ int pos = cboGroup.getSelectedIndex();
+    try {
+        ResultSet rs = con.consultDB("SELECT usu.NUIP, \n" +
+"CONCAT(usu.PrimerApellido, ' ', usu.PrimerNombre) Nombre, \n" +
+"nl.Calificacion FROM usuario as usu \n" +
+"INNER JOIN estudiante as est \n" +
+"ON usu.NUIP = est.Codigo \n" +
+"LEFT JOIN grupo as gru \n" +
+"ON est.Grupo_Id = gru.idGrupo \n" +
+"INNER JOIN docente_materia_grupo as dmg\n" +
+"ON gru.idGrupo = dmg.Grupo_id\n" +
+"INNER JOIN materia as mat\n" +
+"ON dmg.Materia_id = mat.idMateria\n" +
+"INNER JOIN logro as log\n" +
+"ON mat.idMateria = log.idLogro\n" +
+"LEFT JOIN actividad as act\n" +
+"ON log.idLogro = act.idActividad\n" +
+"LEFT JOIN nota_logro as nl\n" +
+"ON est.Codigo = nl.Estudiante_Codigo\n" +
+"WHERE gru.idGrupo = "+idGroup[pos]+" AND act.idActividad IS NULL AND log.idLogro = "+id
++" GROUP BY usu.NUIP");
+        
+        while(rs.next()){
+            reg[0] = rs.getString("usu.NUIP");
+            reg[1] = rs.getString("Nombre");
+            reg[2] = rs.getString("nl.Calificacion");
             
             model.addRow(reg);
         }
