@@ -264,27 +264,39 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
                 String grade = (String) model.getValueAt(i, 2);                                       
                     System.out.println("FLAG 2 "+i+" nota: "+grade);
                 int pos = cboActivity.getSelectedIndex();          
-                if(grade.equals("")){   
-                   ResultSet rs = con.consultDB("SELECT * FROM nota_actividad "
+                ResultSet rs = con.consultDB("SELECT * FROM nota_actividad "
                            + "WHERE estudiante_codigo = "+model.getValueAt(i, 0));
+                if(grade.equals("")){   
+                   
                   if(rs.next()){
-                   System.out.println("Aqui entra ");
-                   con.modifyDB("UPDATE nota_actividad SET calificacion = 0"
-                           + " WHERE estudiante_codigo = "+model.getValueAt(i, 0));
-                   JOptionPane.showMessageDialog(rootPane, "LA CALIFICACION DE LA ACTIVIDAD "
+                    System.out.println("Aqui entra act null");
+                    con.modifyDB("UPDATE Nota_Actividad SET Calificacion = 0"
+                           + " WHERE Estudiante_Codigo = "+model.getValueAt(i, 0));
+                    JOptionPane.showMessageDialog(rootPane, "LA CALIFICACION DE LA ACTIVIDAD "
                            + "FUE ACTUALIZADA CORRECTAMENTE");
                   }else{
-                  con.modifyDB("INSERT INTO Nota_Actividad VALUES "
+                    con.modifyDB("INSERT INTO Nota_Actividad VALUES "
                           + "(null, 0, "+model.getValueAt(i, 0)+", "+idActivity[pos]+", 'B')");
+                    JOptionPane.showMessageDialog(rootPane, "LA CALIFICACION DE LA ACTIVIDAD "
+                           + "FUE INGRESADA CORRECTAMENTE");        
                   }
-                }else {  
+                }else {                    
                     System.out.println("FLAG 3");
-                  double num = Double.parseDouble(grade);
-                  rank = assignRank(num);
-                  System.out.println("nota: "+num);
-                                    
-                  con.modifyDB("INSERT INTO Nota_Actividad VALUES "
+                    double num = Double.parseDouble(grade);
+                    rank = assignRank(num);
+                    System.out.println("nota: "+num);
+                  if(rs.next()){
+                   System.out.println("Aqui entra act no null");
+                    con.modifyDB("UPDATE Nota_Actividad SET Calificacion = "+ tbData.getValueAt(i, 2)
+                           + " WHERE Estudiante_Codigo = "+model.getValueAt(i, 0));
+                    JOptionPane.showMessageDialog(rootPane, "LA CALIFICACION DE LA ACTIVIDAD "
+                           + "FUE ACTUALIZADA CORRECTAMENTE");
+                  }else{                                    
+                    con.modifyDB("INSERT INTO Nota_Actividad VALUES "
                           + "(null, "+tbData.getValueAt(i, 2)+", "+tbData.getValueAt(i, 0)+", "+idActivity[pos]+", '"+rank+"')");  
+                    JOptionPane.showMessageDialog(rootPane, "LA CALIFICACION DE LA ACTIVIDAD "
+                           + "FUE INGRESADA CORRECTAMENTE");
+                  }
                 }  
                 }
             } catch (Exception e) {
@@ -361,9 +373,7 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
     }//GEN-LAST:event_cboAchievementsItemStateChanged
 
     private void txtSearchKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyReleased
-//            String value = txtSearch.getText();
-//            String id = jLabel9.getText();
-//            loadTableActivity(value, id);
+
     }//GEN-LAST:event_txtSearchKeyReleased
 
     private void cboActivityItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboActivityItemStateChanged
