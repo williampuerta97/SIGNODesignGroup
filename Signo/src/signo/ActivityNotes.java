@@ -8,6 +8,7 @@ package signo;
 import java.awt.event.ItemEvent;
 import java.sql.ResultSet;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 
@@ -263,11 +264,19 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
                 String grade = (String) model.getValueAt(i, 2);                                       
                     System.out.println("FLAG 2 "+i+" nota: "+grade);
                 int pos = cboActivity.getSelectedIndex();          
-               if(grade.equals("")){   
-
-                  System.out.println("Aqui entra ");  
+                if(grade.equals("")){   
+                   ResultSet rs = con.consultDB("SELECT * FROM nota_actividad "
+                           + "WHERE estudiante_codigo = "+model.getValueAt(i, 0));
+                  if(rs.next()){
+                   System.out.println("Aqui entra ");
+                   con.modifyDB("UPDATE nota_actividad SET calificacion = 0"
+                           + " WHERE estudiante_codigo = "+model.getValueAt(i, 0));
+                   JOptionPane.showMessageDialog(rootPane, "LA CALIFICACION DE LA ACTIVIDAD "
+                           + "FUE ACTUALIZADA CORRECTAMENTE");
+                  }else{
                   con.modifyDB("INSERT INTO Nota_Actividad VALUES "
                           + "(null, 0, "+model.getValueAt(i, 0)+", "+idActivity[pos]+", 'B')");
+                  }
                 }else {  
                     System.out.println("FLAG 3");
                   double num = Double.parseDouble(grade);
