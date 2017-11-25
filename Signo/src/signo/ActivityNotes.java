@@ -15,11 +15,13 @@ import javax.swing.table.TableColumnModel;
 /**
  *
  * @author Grupo diseño
+ * @version 1.0
  */
 public class ActivityNotes extends javax.swing.JInternalFrame {
 
     /**
-     * Creates new form NotasXActividades
+     * Crea una nueva ventana para el ingreso de notas por actividad, y 
+     * notas por logro
      */
     Connection con;
     DefaultTableModel model;
@@ -27,6 +29,14 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
     String idGroup [], idSubject[], idAchivement[], idActivity[];
     String title[] = {"Nuip", "Nombres y apellidos", "Nota"};
     TableColumnModel columnModel;
+    /**
+     * Método constructor de la clase ActivityNotes, instanciando la clase
+     * de la conexión a la base de datos, cargando el jComboBox de grupo dependiendo del
+     * docente que le dé clases. Cargando también el método disableCombo para
+     * desactivar los demás jComboBox. También carga el método loadTeacher para
+     * establecer el nombre del profesor que ingrese al sistema. Se instancia la clase
+     * de modelo de la tabla y la clase del modelo de la columna de la tabla
+     */
     public ActivityNotes() {
         initComponents();
         con = new Connection();
@@ -61,11 +71,7 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
         btnRegister = new javax.swing.JButton();
         lbTeachers = new javax.swing.JLabel();
         cboSubjects = new javax.swing.JComboBox<>();
-        jLabel7 = new javax.swing.JLabel();
-        txtSearch = new javax.swing.JTextField();
         jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
 
         setClosable(true);
         setIconifiable(true);
@@ -142,15 +148,6 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
             }
         });
 
-        jLabel7.setFont(new java.awt.Font("Tahoma", 0, 13)); // NOI18N
-        jLabel7.setText("Buscar:");
-
-        txtSearch.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                txtSearchKeyReleased(evt);
-            }
-        });
-
         jLabel8.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -172,26 +169,17 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
                         .addGap(88, 88, 88)
                         .addComponent(jLabel5)
                         .addGap(80, 80, 80)
-                        .addComponent(cboAchievements, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jLabel10))
+                        .addComponent(cboAchievements, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(36, 36, 36)
                         .addComponent(jLabel4)
                         .addGap(52, 52, 52)
                         .addComponent(jLabel6)
                         .addGap(48, 48, 48)
-                        .addComponent(cboActivity, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(jLabel9))
+                        .addComponent(cboActivity, javax.swing.GroupLayout.PREFERRED_SIZE, 172, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(27, 27, 27)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 397, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(96, 96, 96)
-                        .addComponent(jLabel7)
-                        .addGap(43, 43, 43)
-                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(88, 88, 88)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -225,9 +213,7 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
                             .addComponent(cboSubjects, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(37, 37, 37)
                         .addComponent(jLabel5))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(cboAchievements, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel10)))
+                    .addComponent(cboAchievements, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(35, 35, 35)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -236,16 +222,10 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(6, 6, 6)
                         .addComponent(jLabel6))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(cboActivity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jLabel9)))
+                    .addComponent(cboActivity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(31, 31, 31)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel7))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 78, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 29, Short.MAX_VALUE)
                 .addComponent(btnRegister)
                 .addGap(19, 19, 19))
         );
@@ -264,14 +244,16 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
                 String grade = (String) model.getValueAt(i, 2);                                       
                     System.out.println("FLAG 2 "+i+" nota: "+grade);
                 int pos = cboActivity.getSelectedIndex();          
-                ResultSet rs = con.consultDB("SELECT * FROM nota_actividad "
-                           + "WHERE estudiante_codigo = "+model.getValueAt(i, 0));
+                ResultSet rs = con.consultDB("SELECT * FROM nota_actividad "+
+                        "WHERE estudiante_codigo = "+model.getValueAt(i, 0)+ 
+                        " AND actividad_id = "+idActivity[pos]);
                 if(grade.equals("")){   
                    
                   if(rs.next()){
                     System.out.println("Aqui entra act null");
-                    con.modifyDB("UPDATE Nota_Actividad SET Calificacion = 0"
-                           + " WHERE Estudiante_Codigo = "+model.getValueAt(i, 0));
+                    con.modifyDB("UPDATE Nota_Actividad SET Calificacion = 0, Rango = 'B'"
+                           + " WHERE Estudiante_Codigo = "+model.getValueAt(i, 0)+ " AND "
+                           + "actividad_id = "+idActivity[pos]);
                     JOptionPane.showMessageDialog(rootPane, "LA CALIFICACION DE LA ACTIVIDAD "
                            + "FUE ACTUALIZADA CORRECTAMENTE");
                   }else{
@@ -287,13 +269,14 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
                     System.out.println("nota: "+num);
                   if(rs.next()){
                    System.out.println("Aqui entra act no null");
-                    con.modifyDB("UPDATE Nota_Actividad SET Calificacion = "+ tbData.getValueAt(i, 2)
-                           + " WHERE Estudiante_Codigo = "+model.getValueAt(i, 0));
+                    con.modifyDB("UPDATE Nota_Actividad SET Calificacion = "+ model.getValueAt(i, 2)
+                    + ", Rango = '"+rank+"' WHERE Estudiante_Codigo = "+model.getValueAt(i, 0)
+                    +" AND actividad_id = "+idActivity[pos]);
                     JOptionPane.showMessageDialog(rootPane, "LA CALIFICACION DE LA ACTIVIDAD "
                            + "FUE ACTUALIZADA CORRECTAMENTE");
                   }else{                                    
                     con.modifyDB("INSERT INTO Nota_Actividad VALUES "
-                          + "(null, "+tbData.getValueAt(i, 2)+", "+tbData.getValueAt(i, 0)+", "+idActivity[pos]+", '"+rank+"')");  
+                          + "(null, "+model.getValueAt(i, 2)+", "+model.getValueAt(i, 0)+", "+idActivity[pos]+", '"+rank+"')");  
                     JOptionPane.showMessageDialog(rootPane, "LA CALIFICACION DE LA ACTIVIDAD "
                            + "FUE INGRESADA CORRECTAMENTE");
                   }
@@ -306,15 +289,37 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
                 for (int i = 0; i < count; i++) {                    
                   String grade = (String) model.getValueAt(i, 2);     
                   int pos = cboAchievements.getSelectedIndex();
+                  ResultSet rs = con.consultDB("SELECT * FROM nota_logro "+
+                        "WHERE estudiante_codigo = "+model.getValueAt(i, 0)+ 
+                        " AND logro_id = "+idAchivement[pos]);
                 if(grade.equals("")){
-                  con.modifyDB("INSERT INTO Nota_Logro VALUES "
-                          + "(null, 0, "+idAchivement[pos]+", "+tbData.getValueAt(i, 0)+", 'B')");
+                    if(rs.next()){
+                        con.modifyDB("UPDATE Nota_Logro SET Calificacion = 0, Rango = 'B'"
+                           + " WHERE Estudiante_Codigo = "+model.getValueAt(i, 0)+ " AND "
+                           + " Logro_id = "+idAchivement[pos]);
+                    JOptionPane.showMessageDialog(rootPane, "EL LOGRO INSTITUCIONAL"
+                           + " FUE ACTUALIZADO CORRECTAMENTE");
+                    }else{
+                        con.modifyDB("INSERT INTO Nota_Logro VALUES "
+                          + "(null, 0, "+idAchivement[pos]+", "+model.getValueAt(i, 0)+", 'B')"); 
+                        JOptionPane.showMessageDialog(rootPane, "EL LOGRO INSTITUCIONAL"
+                           + " FUE INGRESADO CORRECTAMENTE");
+                    }
                 }else {
-                      double num = Double.parseDouble(grade);
-                      rank = assignRank(num); 
-                    System.out.println("Aqui entra 2");                                               
-                  con.modifyDB("INSERT INTO Nota_Logro VALUES "
-                          + "(null, "+tbData.getValueAt(i, 2)+", "+idAchivement[pos]+", "+tbData.getValueAt(i, 0)+",'"+rank+"');");  
+                  double num = Double.parseDouble(grade);
+                  rank = assignRank(num);
+                  if(rs.next()){
+                    con.modifyDB("UPDATE Nota_Logro SET Calificacion = "+ model.getValueAt(i, 2)
+                    + ", Rango = '"+rank+"' WHERE Estudiante_Codigo = "+model.getValueAt(i, 0)
+                    +" AND logro_id = "+idAchivement[pos]);
+                    JOptionPane.showMessageDialog(rootPane, "LA CALIFICACION DEL LOGRO INSTITUCIONAL"
+                           + "FUE ACTUALIZADA CORRECTAMENTE");
+                  }else{                                    
+                    con.modifyDB("INSERT INTO Nota_Logro VALUES "
+                          + "(null, "+model.getValueAt(i, 2)+", "+idAchivement[pos]+", "+model.getValueAt(i, 0)+", '"+rank+"')");  
+                    JOptionPane.showMessageDialog(rootPane, "LA CALIFICACION DEL LOGRO INSTITUCIONAL"
+                           + "FUE INGRESADO CORRECTAMENTE");
+                  }
                 }  
                 }
             } catch (Exception e) {
@@ -358,11 +363,17 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
     private void cboAchievementsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboAchievementsItemStateChanged
         if(cboAchievements.getSelectedIndex() > 0){
             int pos = cboAchievements.getSelectedIndex();
-            jLabel6.setVisible(true);
-            cboActivity.setVisible(true);
-            cboActivity.setEnabled(true);
-            loadActivity(idAchivement[pos]);
-            loadTableAchievements(idAchivement[pos]);
+            try {
+                ResultSet rs = con.consultDB("SELECT * FROM logro WHERE "
+                        + "idLogro = "+idAchivement[pos]+" AND tipo = 'ins'");
+                if(rs.next()){
+                    loadTableAchievements(idAchivement[pos]);
+                }else{
+                    loadActivity(idAchivement[pos]);
+                }
+            } catch (Exception e) {
+            }
+            
         }else if(cboAchievements.getSelectedIndex() == 0){                                   
             cboActivity.removeAllItems();
             cboActivity.setEnabled(false);
@@ -372,18 +383,23 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
         }       
     }//GEN-LAST:event_cboAchievementsItemStateChanged
 
-    private void txtSearchKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtSearchKeyReleased
-
-    }//GEN-LAST:event_txtSearchKeyReleased
-
     private void cboActivityItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboActivityItemStateChanged
         if(cboActivity.getSelectedIndex() > 0){
             int pos = cboActivity.getSelectedIndex();
             loadTableActivity(idActivity[pos]);
-        }else if(cboActivity.getSelectedIndex() == 0){
+        }else{
             model.setRowCount(0);
         }    
     }//GEN-LAST:event_cboActivityItemStateChanged
+/**
+ * @author Grupo diseño
+ * @version 1.0
+ * Lo que hace este método es cargar el jComboBox de grupos dependiendo del docente 
+ * que le da clase a esos grupos.
+ * @param code El método loadGroup recibe como parámetro el código de docente en un int
+ * que le da clases a unos determinados grupos, se llama en el método constructor.
+ *  
+ */
 void loadGroup(int code){
     try {
         ResultSet rs = con.consultDB("SELECT count(*) conteo FROM grupo"
@@ -414,7 +430,13 @@ void loadGroup(int code){
     } catch (Exception e) {
     }
 }
-
+/**
+ * @author Grupo diseño
+ * @version 1.0
+ * El método loadSubjects nos carga el jComboBox de materias que ve un determinado 
+ * grupo.
+ * @param value Recibe en un String, la id del grupo para cargar sus materias en el jComboBox
+ */
 void loadSubjects(String value){
     try {
         ResultSet rs = con.consultDB("SELECT count(*) conteo "
@@ -448,7 +470,14 @@ void loadSubjects(String value){
     } catch (Exception e) {
     }
 }
-
+/**
+ * @author Grupo diseño
+ * @version 1.0
+ * Este método carga en el jComboBox de logros, los logros que tiene una materia
+ * determinada
+ * @param value Este parámetro en String es para recibir la id de la materia y así cargar
+ * todos los logros que hay en ella
+ */
 void loadAchievements(String value){
     cboAchievements.removeAllItems();
     try {
@@ -477,9 +506,20 @@ void loadAchievements(String value){
     } catch (Exception e) {
     }
 }
-
+/**
+ * @author Grupo diseño
+ * @version 1.0
+ * Este método carga en el jComboBox de actvidad, las actividades que tiene un logro
+ * determinado, si este logro es institucional (ins), no mostrará el jComboBox
+ * de actividad.
+ * @param value Este parámetro recibe en un String, la id del logro y carga las actividades
+ * que tenga ese logro
+ */
 void loadActivity(String value){
     cboActivity.removeAllItems();
+    jLabel6.setVisible(true);
+    cboActivity.setVisible(true);
+    cboActivity.setEnabled(true);
     try {
         ResultSet rs = con.consultDB("SELECT COUNT(*) conteo FROM actividad as act "
                 + "INNER JOIN logro as log "
@@ -513,28 +553,40 @@ void loadActivity(String value){
     } catch (Exception e) {
     }
 }
-
+/**
+ * @author Grupo diseño
+ * @version 1.0
+ * Este método carga la tabla con los estudiantes de un determinado grupo elegido
+ * por el docente que le da clase, carga un campo para que éste docente digite 
+ * la calificación de cualquier de sus alumnos, si el alumno tiene notas, entonces
+ * el campo vacío que trae, vendrá con su nota de determinada actividad
+ * @param id Recibe en un String, la id del logro para cargar los estudiantes y sus notas (si tienen, 
+ * en caso de no tener trae el campo vacío para que el docente digite la nota)
+ */
 void loadTableActivity(String id){   
     String reg[] = new String[3];    
  model.setRowCount(0);
  int pos = cboGroup.getSelectedIndex();
     try {
-        ResultSet rs = con.consultDB("SELECT usu.NUIP, CONCAT(usu.PrimerApellido, ' ', usu.PrimerNombre) Nombre, na.Calificacion FROM usuario as usu \n" +
-"INNER JOIN estudiante as est\n" +
+        ResultSet rs = con.consultDB("SELECT usu.NUIP, CONCAT(usu.PrimerApellido, ' ', usu.PrimerNombre) Nombre\n" +
+"FROM usuario usu\n" +
+"INNER JOIN estudiante est\n" +
 "ON usu.NUIP = est.Codigo\n" +
-"LEFT JOIN grupo as gru\n" +
-"ON est.Grupo_Id = gru.idGrupo\n" +
-"INNER JOIN actividad as act\n" +
-"ON gru.idGrupo = act.Grupo_id\n" +
-"LEFT JOIN nota_actividad as na\n" +
-"ON est.Codigo = na.Estudiante_Codigo\n" +
-"WHERE gru.idGrupo = "+idGroup[pos]+" AND act.idActividad = "+id+"\n" +
-"GROUP BY usu.NUIP");
+"INNER JOIN grupo gru\n" +
+"on est.Grupo_Id = gru.idGrupo\n" +
+"WHERE gru.idGrupo =  "+idGroup[pos]);
         
         while(rs.next()){
             reg[0] = rs.getString("usu.NUIP");
             reg[1] = rs.getString("Nombre");
-            reg[2] = rs.getString("na.Calificacion");
+            Connection cone = new Connection();
+            ResultSet resul = cone.consultDB("SELECT * FROM nota_actividad "
+                    + "WHERE estudiante_codigo = "+reg[0]+" AND Actividad_id = "+id);
+            if(resul.next()){
+               reg[2] = resul.getString("Calificacion");
+            }else{
+               reg[2] = ""; 
+            }            
             
             model.addRow(reg);
         }
@@ -545,19 +597,29 @@ void loadTableActivity(String id){
     }
  
 }
-
+/**
+ * @author Grupo diseño
+ * @version 1.0
+ * Este método carga la tabla de los estudiantes de un deeterminado grupo
+ * escogido previamente por el docente. Trae las notas si los estudiantes tienen
+ * sino tienen, trae el campo vacío para que el docente las digite. Esta tabla se
+ * carga sólo para los logros institucionales (ins).
+ * @param id Recibe en un String, la id del logro seleccionado con anterioridad para cargar si tiene
+ * o no tiene notas el estudiante.
+ */
 void loadTableAchievements(String id){   
     String reg[] = new String[3];    
  model.setRowCount(0);
+ jLabel6.setVisible(false);
+ cboActivity.setVisible(false);
  int pos = cboGroup.getSelectedIndex();
     try {
-        ResultSet rs = con.consultDB("SELECT usu.NUIP, \n" +
-"CONCAT(usu.PrimerApellido, ' ', usu.PrimerNombre) Nombre, \n" +
-"nl.Calificacion FROM usuario as usu \n" +
-"INNER JOIN estudiante as est \n" +
-"ON usu.NUIP = est.Codigo \n" +
-"LEFT JOIN grupo as gru \n" +
-"ON est.Grupo_Id = gru.idGrupo \n" +
+        ResultSet rs = con.consultDB("SELECT usu.NUIP, CONCAT(usu.PrimerApellido, ' ', usu.PrimerNombre) Nombre\n" +
+"FROM usuario usu\n" +
+"INNER JOIN estudiante est\n" +
+"ON usu.NUIP = est.Codigo\n" +
+"INNER JOIN grupo gru\n" +
+"on est.Grupo_Id = gru.idGrupo\n" +
 "INNER JOIN docente_materia_grupo as dmg\n" +
 "ON gru.idGrupo = dmg.Grupo_id\n" +
 "INNER JOIN materia as mat\n" +
@@ -565,16 +627,20 @@ void loadTableAchievements(String id){
 "INNER JOIN logro as log\n" +
 "ON mat.idMateria = log.idLogro\n" +
 "LEFT JOIN actividad as act\n" +
-"ON log.idLogro = act.idActividad\n" +
-"LEFT JOIN nota_logro as nl\n" +
-"ON est.Codigo = nl.Estudiante_Codigo\n" +
-"WHERE gru.idGrupo = "+idGroup[pos]+" AND act.idActividad IS NULL AND log.idLogro = "+id
-+" GROUP BY usu.NUIP");
+"ON log.idLogro = act.idActividad "+
+"WHERE gru.idGrupo =  "+idGroup[pos]+" AND act.idActividad IS NULL ");
         
         while(rs.next()){
             reg[0] = rs.getString("usu.NUIP");
             reg[1] = rs.getString("Nombre");
-            reg[2] = rs.getString("nl.Calificacion");
+            Connection cone = new Connection();
+            ResultSet resul = cone.consultDB("SELECT * FROM nota_logro nl "
+                    + "WHERE estudiante_codigo = "+reg[0]+" AND logro_id = "+id);
+            if(resul.next()){
+               reg[2] = resul.getString("Calificacion");
+            }else{
+               reg[2] = ""; 
+            }
             
             model.addRow(reg);
         }
@@ -585,13 +651,26 @@ void loadTableAchievements(String id){
     }
  
 }
+/**
+ * @author Grupo diseño
+ * @version 1.0
+ * Este método desactiva todos los jComboBox menos el de grupo y también
+ * oculta el jLabel de actividad y el jComboBox de la misma
+ * 
+ */
 void disableCombo(){
     cboSubjects.setEnabled(false);
     cboAchievements.setEnabled(false);
     cboActivity.setVisible(false);
     jLabel6.setVisible(false);
 }
-
+/**
+ * @author Grupo diseño
+ * @version 1.0
+ * Este método lo que hace es establecer el nombre del docente que entre al sistema
+ * @param id Este parámetro int, recibe el código del docente que se captura desde
+ * que él ingresa al sistema
+ */
 void loadTeacher(int id){
     try {
         ResultSet rs = con.consultDB("SELECT CONCAT(PrimerNombre, ' ',"
@@ -603,7 +682,15 @@ void loadTeacher(int id){
     } catch (Exception e) {
     }
 }
-
+/**
+ * @author Grupo diseño
+ * @version 1.0
+ * Este método asigna el rango de nota para una actividad o un logro institucional.
+ * El rango se pasa en letra
+ * @param grade Recibe como parámetro un double que es la nota del estudiante para
+ * compararla y así sacar su rango de nota
+ * @return Devuelve un String que es el rango de la nota del estudiante
+ */
 String assignRank(double grade){
     String rank = "";
     if((grade >= 0) && (grade <= 2.5)){
@@ -626,18 +713,14 @@ String assignRank(double grade){
     private javax.swing.JComboBox cboGroup;
     private javax.swing.JComboBox<String> cboSubjects;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbTeachers;
     private javax.swing.JTable tbData;
-    private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
 }
