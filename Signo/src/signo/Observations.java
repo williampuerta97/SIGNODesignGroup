@@ -25,6 +25,12 @@ public class Observations extends javax.swing.JInternalFrame {
     Connection con;
     DefaultComboBoxModel model1, model2, model3;
     DefaultTableModel tbModel1, tbModel2;
+    /**
+     * Variables que guardaran el id del grupo, materia y periodo
+     */
+    String idGroup[];
+    String idSubjects[];
+    String idPeriod[];
 
     public Observations() {
         initComponents();
@@ -195,60 +201,71 @@ public class Observations extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Evento ItemStateChanged para el comboBox de grupo
+     *
+     * @param evt
+     */
     private void cboCourseItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboCourseItemStateChanged
         if (cboCourse.getSelectedIndex() > 0) {
-            String group = (String) cboCourse.getSelectedItem();
+            int group = cboCourse.getSelectedIndex();
             cboSubjects.setEnabled(true);
-            loadSubjects(group);
+            loadSubjects(idGroup[group]);
         } else if (cboCourse.getSelectedIndex() == 0) {
+            loadTables("", null);
             cboSubjects.removeAllItems();
             cboPeriod.removeAllItems();
             disableCombo();
         }
     }//GEN-LAST:event_cboCourseItemStateChanged
 
+    /**
+     * Evento ItemStateChanged para el comboBox de materia
+     *
+     * @param evt
+     */
     private void cboSubjectsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboSubjectsItemStateChanged
         String subject = (String) cboSubjects.getSelectedItem();
         loadPeriod();
+        loadTables("", null);
         cboPeriod.setEnabled(true);
     }//GEN-LAST:event_cboSubjectsItemStateChanged
 
+    /**
+     * Evento ItemStateChanged para el comboBox de periodo
+     *
+     * @param evt
+     */
     private void cboPeriodItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboPeriodItemStateChanged
         if (cboPeriod.getSelectedIndex() > 0) {
-            String subject = (String) cboSubjects.getSelectedItem();
-            String period = (String) cboPeriod.getSelectedItem();
+            int subject = cboSubjects.getSelectedIndex();
+            int period = cboPeriod.getSelectedIndex();
             tbObservations.setVisible(true);
             tbData.setVisible(true);
             tbData.setEnabled(false);
-            loadTables(period, subject);
+            loadTables(idPeriod[period], idSubjects[subject]);
         } else if (cboPeriod.getSelectedIndex() == 0) {
             tbObservations.setVisible(false);
             tbData.setVisible(false);
         }
     }//GEN-LAST:event_cboPeriodItemStateChanged
 
+    /**
+     * Evento ActionPerformed del boton btnSave Guarda los datos de las dos
+     * tablas del frame en la base de datos
+     *
+     * @param evt
+     */
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
 
-        String nameSubject = (String) cboSubjects.getSelectedItem();
-        String namePeriod = (String) cboPeriod.getSelectedItem();
+        int idSubj = Integer.parseInt(idSubjects[cboSubjects.getSelectedIndex()]);
+        int idPer = Integer.parseInt(idPeriod[cboPeriod.getSelectedIndex()]);
         String rank = "";
         String observation = "";
 
         int codeStudent = 0;
-        double grade = 0;
-        int idSubject = 0;
-        int idPeriod = 0;
+        double grade = 0.0;
         int column = tbData.getColumnCount() - 1;
-
-        try {
-            ResultSet query = con.consultDB("SELECT mat.idMateria, per.idperiodo FROM materia as mat, periodo as per  "
-                    + "WHERE mat.Nombre = '" + nameSubject + "' AND per.Nombre = '" + namePeriod + "'");
-            while (query.next()) {
-                idSubject = Integer.parseInt(query.getString("mat.idMateria"));
-                idPeriod = Integer.parseInt(query.getString("per.idperiodo"));
-            }
-        } catch (Exception e) {
-        }
 
         for (int i = 0; i < tbData.getRowCount(); i++) {
             codeStudent = Integer.parseInt((String) tbData.getValueAt(i, 0));
@@ -258,16 +275,26 @@ public class Observations extends javax.swing.JInternalFrame {
 
             con.modifyDB("INSERT INTO nota_materia_periodo VALUES "
                     + "( NULL ," + grade + ",'" + rank + "','" + observation + "',"
-                    + codeStudent + "," + idPeriod + "," + idSubject + ")");
+                    + codeStudent + "," + idPer + "," + idSubj + ")");
         }
 
     }//GEN-LAST:event_btnSaveActionPerformed
 
+    /**
+     * Método para cargar los grupos en los que está el docente
+     *
+     * @param code recibe el código del docente
+     */
     void loadGroup(int code) {
+        /**
+         * Consulta que trae el nombre del docente loggeado y la cantidad de
+         * grupos en los que enseña el docente
+         */
         try {
             ResultSet rs = con.consultDB("SELECT CONCAT(usu.PrimerNombre,' ',usu.SegundoNombre,' ',"
-                    + "usu.PrimerApellido,' ',usu.SegundoApellido) as nomDoc, Nombre FROM grupo "
-                    + "INNER JOIN Docente_Materia_Grupo as dmg "
+                    + "usu.PrimerApellido,' ',usu.SegundoApellido) as nomDoc,"
+                    + "COUNT(*) grupos FROM grupo "
+                    + "INNER JOIN docente_materia_grupo as dmg "
                     + "ON grupo.idGrupo = dmg.Grupo_id "
                     + "INNER JOIN docente as doc "
                     + "ON doc.Codigo = dmg.Docente_id "
@@ -279,27 +306,96 @@ public class Observations extends javax.swing.JInternalFrame {
             cboCourse.setModel(model1);
             model1.addElement("Seleccione un grado");
             while (rs.next()) {
-                model1.addElement(rs.getString("Nombre"));
+                int groups = rs.getInt("grupos");
+                /**
+                 * En la longitud del arreglo se le asigna la variable groups,
+                 * que tiene la cantidad de grupos y se le suma 1, ya que en el
+                 * comboBox de grupo el primer item no tiene valor
+                 */
+                idGroup = new String[groups + 1];
                 lbTeachers.setText(rs.getString("nomDoc"));
+            }
+        } catch (Exception e) {
+        }
+
+        /**
+         * Consulta que trae el id y el nombre del grupo, a su vez carga el
+         * cboCourse con los grupos que dicta el docente
+         */
+        try {
+            /**
+             * Se crea la variable i tipo entero que es inicializada en 1
+             */
+            int i = 1;
+            ResultSet rst = con.consultDB("SELECT idGrupo, Nombre FROM grupo "
+                    + "INNER JOIN docente_materia_grupo as dmg "
+                    + "ON grupo.idGrupo = dmg.Grupo_id "
+                    + "WHERE dmg.Docente_id = " + code + " "
+                    + "GROUP BY dmg.Grupo_id");
+            model1 = new DefaultComboBoxModel();
+            cboCourse.setModel(model1);
+            model1.addElement("Seleccione un grado");
+            while (rst.next()) {
+                model1.addElement(rst.getString("Nombre"));
+                /**
+                 * El arreglo de idGrupo tomara valor desde la posición 1
+                 */
+                idGroup[i] = rst.getString("idGrupo");
+                i++;
             }
         } catch (Exception e) {
         }
     }
 
+    /**
+     * Método que carga el comboBox de materias que se dictan en el grupo
+     *
+     * @param value recibe el id del grupo
+     */
     void loadSubjects(String value) {
-
-        cboSubjects.removeAllItems();
+        /**
+         * Consulta que trae la cantidad de materias que se dictan en el grupo
+         */
         try {
-            ResultSet rs = con.consultDB("SELECT  mat.Nombre "
-                    + "FROM materia as mat "
-                    + "INNER JOIN Docente_Materia_Grupo as dmg "
+            ResultSet rs = con.consultDB("SELECT COUNT(*) cantidad "
+                    + "FROM materia as mat \n"
+                    + "INNER JOIN docente_materia_grupo as dmg "
                     + "ON mat.idMateria = dmg.Materia_id "
                     + "INNER JOIN grupo as gru "
                     + "ON dmg.Grupo_id = gru.idGrupo "
-                    + "WHERE gru.Nombre = '" + value + "'");
+                    + "WHERE gru.idGrupo = " + value);
             model2 = new DefaultComboBoxModel();
             while (rs.next()) {
-                model2.addElement(rs.getString("mat.Nombre"));
+                int subjects = rs.getInt("cantidad");
+                /**
+                 * En la longitud del arreglo se le asigna la variable subjects,
+                 * que tiene la cantidad de materias
+                 */
+                idSubjects = new String[subjects];
+            }
+        } catch (Exception e) {
+        }
+        cboSubjects.removeAllItems();
+        try {
+            /**
+             * Se crea la variable i tipo entero que es inicializada en 0
+             */
+            int i = 0;
+            ResultSet rst = con.consultDB("SELECT  mat.idMateria, mat.Nombre "
+                    + "FROM materia as mat "
+                    + "INNER JOIN docente_materia_grupo as dmg "
+                    + "ON mat.idMateria = dmg.Materia_id "
+                    + "INNER JOIN grupo as gru "
+                    + "ON dmg.Grupo_id = gru.idGrupo "
+                    + "WHERE gru.idGrupo = " + value);
+            model2 = new DefaultComboBoxModel();
+            while (rst.next()) {
+                model2.addElement(rst.getString("mat.Nombre"));
+                /**
+                 * El arreglo de idSubjects tomara valor desde la posición 0
+                 */
+                idSubjects[i] = rst.getString("mat.idMateria");
+                i++;
             }
             cboSubjects.setModel(model2);
 
@@ -307,19 +403,55 @@ public class Observations extends javax.swing.JInternalFrame {
         }
     }
 
+    /**
+     * Método que carga cboPeriod con los periodos existentes
+     */
     void loadPeriod() {
+        /**
+         * Consulta que trae la cantidad de periodos
+         */
         try {
-            ResultSet rs = con.consultDB("SELECT Nombre FROM periodo");
+            ResultSet rs = con.consultDB("SELECT COUNT(*) cantidad FROM periodo ");
             model3 = new DefaultComboBoxModel();
-            cboPeriod.setModel(model3);
             model3.addElement("Seleccione el periodo");
+            cboPeriod.setModel(model3);
             while (rs.next()) {
-                model3.addElement(rs.getString("Nombre"));
+                int period = rs.getInt("cantidad");
+                /**
+                 * En la longitud del arreglo se le asigna la variable period,
+                 * que tiene la cantidad de periodos y se le suma 1, ya que en
+                 * el comboBox de periodo el primer item no tiene valor
+                 */
+                idPeriod = new String[period + 1];
+            }
+        } catch (Exception e) {
+        }
+
+        /**
+         * Consulta que traera el id y el nombre del periodo
+         */
+        try {
+            int i = 1;
+            ResultSet rst = con.consultDB("SELECT idperiodo, Nombre FROM periodo ");
+            cboPeriod.setModel(model3);
+            while (rst.next()) {
+                model3.addElement(rst.getString("Nombre"));
+                /**
+                 * El arreglo idPeriod tendrá valor en la posición 1
+                 */
+                idPeriod[i] = rst.getString("idPeriodo");
+                i++;
             }
         } catch (Exception e) {
         }
     }
 
+    /**
+     * Método que determina el rango de la calificación
+     *
+     * @param grade recibe la calificación
+     * @return el rango de la calificación
+     */
     public String assingRank(double grade) {
         String rank = "";
         if ((grade >= 0) && (grade < 2.5)) {
@@ -332,52 +464,89 @@ public class Observations extends javax.swing.JInternalFrame {
         return rank;
     }
 
+    /**
+     * Método que carga las tablas tbData y tbObservations
+     *
+     * @param value recibe el id del periodo
+     * @param value2 recibe el id de la materia
+     */
     void loadTables(String value, String value2) {
-        int i = 1;
-        try {
-            ResultSet query = con.consultDB("SELECT COUNT(log.idLogro) as cantidad "
-                    + "FROM logro as log "
-                    + "INNER JOIN periodo as per "
-                    + "ON per.idperiodo = log.periodo_id "
-                    + "INNER JOIN materia as mat "
-                    + "ON mat.idMateria = log.Materia_id "
-                    + "WHERE per.Nombre = '" + value + "' "
-                    + "AND mat.Nombre = '" + value2 + "'");
-            while (query.next()) {
-                if (Integer.parseInt(query.getString("cantidad")) > 0) {
-                    i = Integer.parseInt(query.getString("cantidad"));
-                }
-            }
-        } catch (SQLException ex) {
+        /**
+         * Condicionales que cargaran las tablas según el valor que reciba el
+         * segundo parámetro
+         */
+        if (value2 == null) {
+            String title[] = {"NUIP", "Nombre", "Logro 1", "Definitiva"};
+            tbModel1 = new DefaultTableModel(null, title);
+            tbData.setModel(tbModel1);
+
+            String title2[] = {"Observaciones"};
+            tbModel2 = new DefaultTableModel(null, title2);
+            tbObservations.setModel(tbModel2);
         }
-
-        String title[] = new String[3 + i];
-
-        for (int j = 0; j < title.length; j++) {
-            if (j == 0) {
-                title[j] = "NUIP";
-            }
-
-            if (j == 1) {
-                title[j] = "Nombre";
-            }
-            if ((j > 1) && (j < title.length - 1)) {
-                for (int k = 0; k < i; k++) {
-                    title[j] = "Logro " + (k + 1);
-                    j++;
-                }
-            }
-            if (j == title.length - 1) {
-                title[j] = "Definitiva";
-            }
-        }
-
-        tbModel1 = new DefaultTableModel(null, title);
-        tbData.setModel(tbModel1);
-
         if (value2 != null) {
-            String reg[] = new String[title.length];
+            int i = 1;
+            /**
+             * Consulta que trae la cantidad de logros que tiene la materia en
+             * un determinado periodo
+             */
             try {
+                ResultSet query = con.consultDB("SELECT COUNT(log.idLogro) as cantidad "
+                        + "FROM logro as log "
+                        + "INNER JOIN periodo as per "
+                        + "ON per.idperiodo = log.periodo_id "
+                        + "INNER JOIN materia as mat "
+                        + "ON mat.idMateria = log.Materia_id "
+                        + "WHERE per.idperiodo = " + value + " "
+                        + "AND mat.idMateria = " + value2);
+                while (query.next()) {
+                    if (Integer.parseInt(query.getString("cantidad")) > 0) {
+                        i = Integer.parseInt(query.getString("cantidad"));
+                    }
+                }
+            } catch (SQLException ex) {
+            }
+            /**
+             * Inicializar el arreglo que muestra los identificadores de tbData.
+             * Se le suma la variable i para que tome en cuenta la cantidad de
+             * logros que tiene la materia
+             */
+            String title[] = new String[3 + i];
+
+            //Ciclo para recorrer el arreglo title
+            for (int j = 0; j < title.length; j++) {
+                /**
+                 * Condicionales para darle valor al arreglo según su posición
+                 */
+                if (j == 0) {
+                    title[j] = "NUIP";
+                }
+
+                if (j == 1) {
+                    title[j] = "Nombre";
+                }
+                if ((j > 1) && (j < title.length - 1)) {
+                    for (int k = 0; k < i; k++) {
+                        title[j] = "Logro " + (k + 1);
+                        j++;
+                    }
+                }
+                if (j == title.length - 1) {
+                    title[j] = "Definitiva";
+                }
+            }
+
+            tbModel1 = new DefaultTableModel(null, title);
+            tbData.setModel(tbModel1);
+
+            String reg[] = new String[title.length];
+
+            //Está consulta traerá el nombre del logro
+            try {
+                /**
+                 * La variable j en inicializada en 2, porque las posiciones 0 y
+                 * 1 tendrán otro tipo de valor
+                 */
                 int j = 2;
                 ResultSet rst = con.consultDB("SELECT log.Nombre "
                         + "FROM logro as log "
@@ -391,12 +560,17 @@ public class Observations extends javax.swing.JInternalFrame {
                         + "ON est.Codigo = ntl.Estudiante_Codigo "
                         + "INNER JOIN usuario as usu "
                         + "ON usu.NUIP = est.Codigo "
-                        + "WHERE per.Nombre = '" + value + "' "
-                        + "AND mat.Nombre = '" + value2 + "' "
+                        + "WHERE per.idperiodo = " + value + " "
+                        + "AND mat.idMateria = " + value2 + " "
                         + "GROUP BY log.idLogro "
                 );
                 while (rst.next()) {
                     if ((j > 1) && (j < reg.length - 1)) {
+                        /**
+                         * Los nombres de los logros estaran desde la posición 2
+                         * en adelante (según la cantidad de logros), excepto en
+                         * la última posición
+                         */
                         reg[j] = rst.getString("log.Nombre");
                         j++;
                     }
@@ -407,7 +581,7 @@ public class Observations extends javax.swing.JInternalFrame {
             try {
                 ResultSet rs = con.consultDB("SELECT usu.NUIP as Nuip, "
                         + "CONCAT(usu.PrimerApellido,' ',usu.PrimerNombre) as Nombre, "
-                        + "AVG(ntl.Calificacion) as Definitiva "
+                        + "FORMAT(AVG(ntl.Calificacion),1) as Definitiva "
                         + "FROM logro as log "
                         + "INNER JOIN periodo as per "
                         + "ON per.idperiodo = log.periodo_id "
@@ -419,59 +593,106 @@ public class Observations extends javax.swing.JInternalFrame {
                         + "ON est.Codigo = ntl.Estudiante_Codigo "
                         + "INNER JOIN usuario as usu "
                         + "ON usu.NUIP = est.Codigo "
-                        + "WHERE per.Nombre = '" + value + "' "
-                        + "AND mat.Nombre = '" + value2 + "' "
+                        + "WHERE per.idperiodo = " + value + " "
+                        + "AND mat.idMateria = " + value2 + " "
                         + "GROUP BY usu.NUIP "
                 );
 
+                /**
+                 * Los datos traidos de la consulta se guardan en las posiciones
+                 * 0, 1 y la última del arreglo reg
+                 */
                 while (rs.next()) {
-
                     reg[0] = rs.getString("Nuip");
                     reg[1] = rs.getString("Nombre");
-                    String grade = String.format("%.1f", Double.parseDouble(rs.getString("Definitiva")));
-                    reg[reg.length - 1] = grade;
+                    double grade = rs.getDouble("Definitiva");
+                    reg[reg.length - 1] = "" + grade;
                     tbModel1.addRow(reg);
                 }
 
             } catch (Exception e) {
             }
 
-            /*
-             Cargar Tabla Observaciones
+            /**
+             * Cargar la tabla tbObservations
              */
-            int countRow = tbData.getRowCount();
-            int rowObservations = countRow - 1;
-            int row = 0;
+            // La variable obs es inicializada en 0
+            int obs = 0;
             String title2[] = {"Observaciones"};
-            String reg2[] = new String[1];
-
             tbModel2 = new DefaultTableModel(null, title2);
-            
-            tbModel2.setRowCount(countRow);
             try {
-                ResultSet rst = con.consultDB("SELECT Observacion FROM nota_materia_periodo as nmp "
-                        + "INNER JOIN periodo as per "
-                        + "ON per.idperiodo = nmp.Periodo_id "
-                        + "INNER JOIN materia as mat "
-                        + "ON mat.idMateria = nmp.Materia_id "
-                        + "WHERE per.Nombre = '" + value + "' "
-                        + "AND mat.Nombre = '" + value2 + "' "
-                        + "ORDER BY id DESC");
-                //rowObservations++;
-                while (rst.next()) {
-
-                    reg2[0] = rst.getString("Observacion");
-                    while (row <= rowObservations) {
-                        tbModel2.setValueAt(reg2[0], row, 0);
-                        row++;
-                    }
+                ResultSet query = con.consultDB("SELECT COUNT(Observacion) as cantidad FROM nota_materia_periodo "
+                        + "WHERE Periodo_id = " + value + " "
+                        + "AND Materia_id = " + value2);
+                while (query.next()) {
+                    //La variable obs cambiara de valor según 
+                    //el resultado de la consulta
+                    obs = Integer.parseInt(query.getString("cantidad"));
                 }
-                tbObservations.setModel(tbModel2);
             } catch (Exception e) {
             }
-        }
+            String reg2[] = new String[1];
+            /**
+             * Condicionales que cargaran la tabla tbObservations
+             * según el valor de la variable obs
+             */
+            if (obs == 0) {
+                int countRow = tbData.getRowCount();
+                tbModel2.setRowCount(countRow);
+                tbObservations.setModel(tbModel2);
+            } else if (obs > 0 && obs != 1) {
+                int countRow = tbData.getRowCount();
+                tbModel2.setRowCount(countRow);
+                int j = 0;
+                try {
+                    ResultSet rs = con.consultDB("SELECT COUNT(est.Codigo), nmp.Observacion "
+                            + "FROM estudiante as est "
+                            + "LEFT JOIN nota_materia_periodo as nmp "
+                            + "ON est.Codigo = nmp.Estudiante_Codigo "
+                            + "WHERE nmp.Periodo_id = " + value + " "
+                            + "And nmp.Materia_id = " + value2 + " "
+                            + "or nmp.Materia_id is null "
+                            + "group by  est.Codigo "
+                            + "order by est.Codigo");
+
+                    while (rs.next()) {
+                        reg2[0] = rs.getString("nmp.Observacion");
+                        tbModel2.setValueAt(reg2[0], j, 0);
+                        j++;
+                    }
+                    tbObservations.setModel(tbModel2);
+                } catch (Exception e) {
+                }
+            } else if (obs == 1) {
+                int countRow = tbData.getRowCount();
+                tbModel2.setRowCount(countRow);
+                int j = 0;
+                try {
+                    ResultSet rs = con.consultDB("SELECT COUNT(est.Codigo), nmp.Observacion "
+                            + "FROM estudiante as est "
+                            + "RIGHT JOIN nota_materia_periodo as nmp "
+                            + "ON est.Codigo = nmp.Estudiante_Codigo "
+                            + "WHERE nmp.Periodo_id = " + value + " "
+                            + "And nmp.Materia_id = " + value2 + " "
+                            + "or nmp.Materia_id is null "
+                            + "group by  nmp.Observacion "
+                            + "order by est.Codigo");
+
+                    while (rs.next()) {
+                        reg2[0] = rs.getString("nmp.Observacion");
+                        tbModel2.setValueAt(reg2[0], j, 0);
+                        j++;
+                    }
+                    tbObservations.setModel(tbModel2);
+                } catch (Exception e) {
+                }
+            }
+        } //Fin del segundo condicional (value2 != null)
     }
 
+    /**
+     * Método que deshabilita los comboBox de materia y periodo
+     */
     void disableCombo() {
         cboSubjects.setEnabled(false);
         cboPeriod.setEnabled(false);
