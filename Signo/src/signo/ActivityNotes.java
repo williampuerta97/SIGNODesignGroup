@@ -235,14 +235,11 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
 
     private void btnRegisterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegisterActionPerformed
         int count = tbData.getRowCount();
-        System.out.println(""+count);
         String rank = "";
         if(jLabel6.isVisible() && cboActivity.isVisible()){
             try {                
-                System.out.println("FLAG 1");
                 for (int i = 0; i < count; i++) {
-                String grade = (String) model.getValueAt(i, 2);                                       
-                    System.out.println("FLAG 2 "+i+" nota: "+grade);
+                String grade = (String) model.getValueAt(i, 2);                                      
                 int pos = cboActivity.getSelectedIndex();          
                 ResultSet rs = con.consultDB("SELECT * FROM nota_actividad "+
                         "WHERE estudiante_codigo = "+model.getValueAt(i, 0)+ 
@@ -250,7 +247,6 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
                 if(grade.equals("")){   
                    
                   if(rs.next()){
-                    System.out.println("Aqui entra act null");
                     con.modifyDB("UPDATE Nota_Actividad SET Calificacion = 0, Rango = 'B'"
                            + " WHERE Estudiante_Codigo = "+model.getValueAt(i, 0)+ " AND "
                            + "actividad_id = "+idActivity[pos]);
@@ -262,13 +258,10 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
                     JOptionPane.showMessageDialog(rootPane, "LA CALIFICACION DE LA ACTIVIDAD "
                            + "FUE INGRESADA CORRECTAMENTE");        
                   }
-                }else {                    
-                    System.out.println("FLAG 3");
+                }else {                
                     double num = Double.parseDouble(grade);
                     rank = assignRank(num);
-                    System.out.println("nota: "+num);
                   if(rs.next()){
-                   System.out.println("Aqui entra act no null");
                     con.modifyDB("UPDATE Nota_Actividad SET Calificacion = "+ model.getValueAt(i, 2)
                     + ", Rango = '"+rank+"' WHERE Estudiante_Codigo = "+model.getValueAt(i, 0)
                     +" AND actividad_id = "+idActivity[pos]);
@@ -500,7 +493,6 @@ void loadAchievements(String value){
         while(rs.next()){
             cboAchievements.addItem(rs.getString("logro.Nombre"));
             idAchivement[i] = rs.getString("logro.idLogro");
-            System.out.println(idAchivement[i] + " logro");
             i++;
         }
     } catch (Exception e) {
@@ -542,7 +534,6 @@ void loadActivity(String value){
                 while(rs.next()){                               
                     cboActivity.addItem(rs.getString("actividad.Nombre"));
                     idActivity[i] = rs.getString("actividad.idActividad");
-                    System.out.println(idActivity[i] + " actividad pro");
                     i++;
                 }
             }else{
@@ -695,15 +686,11 @@ String assignRank(double grade){
     String rank = "";
     if((grade >= 0) && (grade <= 2.5)){
         rank = "B";
-        System.out.println("1");
     }else if((grade >= 2.6) && (grade < 3.5)){
         rank = "M";
-        System.out.println("2");
     }else {
         rank = "A";
-        System.out.println("3");
-    }
-    
+    }   
     return rank;
 }
     // Variables declaration - do not modify//GEN-BEGIN:variables

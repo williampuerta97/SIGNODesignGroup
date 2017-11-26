@@ -7,7 +7,6 @@ package signo;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.DecimalFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
@@ -26,10 +25,6 @@ public class Observations extends javax.swing.JInternalFrame {
     Connection con;
     DefaultComboBoxModel model1, model2, model3;
     DefaultTableModel tbModel1, tbModel2;
-    DecimalFormat format;
-    String idGroup[];
-    String idSubjects[];
-    String idPeriod[];
 
     public Observations() {
         initComponents();
@@ -202,11 +197,10 @@ public class Observations extends javax.swing.JInternalFrame {
 
     private void cboCourseItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboCourseItemStateChanged
         if (cboCourse.getSelectedIndex() > 0) {
-            int group = cboCourse.getSelectedIndex();
+            String group = (String) cboCourse.getSelectedItem();
             cboSubjects.setEnabled(true);
-            loadSubjects(idGroup[group]);
+            loadSubjects(group);
         } else if (cboCourse.getSelectedIndex() == 0) {
-            loadTables("", null);
             cboSubjects.removeAllItems();
             cboPeriod.removeAllItems();
             disableCombo();
@@ -216,18 +210,17 @@ public class Observations extends javax.swing.JInternalFrame {
     private void cboSubjectsItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboSubjectsItemStateChanged
         String subject = (String) cboSubjects.getSelectedItem();
         loadPeriod();
-        loadTables("", null);
         cboPeriod.setEnabled(true);
     }//GEN-LAST:event_cboSubjectsItemStateChanged
 
     private void cboPeriodItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cboPeriodItemStateChanged
         if (cboPeriod.getSelectedIndex() > 0) {
-            int subject = cboSubjects.getSelectedIndex();
-            int period = cboPeriod.getSelectedIndex();
+            String subject = (String) cboSubjects.getSelectedItem();
+            String period = (String) cboPeriod.getSelectedItem();
             tbObservations.setVisible(true);
             tbData.setVisible(true);
             tbData.setEnabled(false);
-            loadTables(idPeriod[period], idSubjects[subject]);
+            loadTables(period, subject);
         } else if (cboPeriod.getSelectedIndex() == 0) {
             tbObservations.setVisible(false);
             tbData.setVisible(false);
@@ -236,24 +229,27 @@ public class Observations extends javax.swing.JInternalFrame {
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
 
-        int idSubj = Integer.parseInt(idSubjects[cboSubjects.getSelectedIndex()]);
-        int idPer = Integer.parseInt(idPeriod[cboPeriod.getSelectedIndex()]);
+        String nameSubject = (String) cboSubjects.getSelectedItem();
+        String namePeriod = (String) cboPeriod.getSelectedItem();
         String rank = "";
         String observation = "";
 
         int codeStudent = 0;
-        double grade = 0.0;
+        double grade = 0;
+        int idSubject = 0;
+        int idPeriod = 0;
         int column = tbData.getColumnCount() - 1;
 
-        /*try {
-                   + "WHERE mat.idMateria = " + idSubjects[idSubj] + " AND per.idperiodo = " + idPeriod[idPer] + " ");
+        try {
+            ResultSet query = con.consultDB("SELECT mat.idMateria, per.idperiodo FROM materia as mat, periodo as per  "
+                    + "WHERE mat.Nombre = '" + nameSubject + "' AND per.Nombre = '" + namePeriod + "'");
             while (query.next()) {
                 idSubject = Integer.parseInt(query.getString("mat.idMateria"));
                 idPeriod = Integer.parseInt(query.getString("per.idperiodo"));
-            } ResultSet query = con.consultDB("SELECT mat.idMateria, per.idperiodo FROM materia as mat, periodo as per  "
-            
+            }
         } catch (Exception e) {
-        }*/
+        }
+
         for (int i = 0; i < tbData.getRowCount(); i++) {
             codeStudent = Integer.parseInt((String) tbData.getValueAt(i, 0));
             grade = Double.parseDouble((String) tbData.getValueAt(i, column));
@@ -262,7 +258,7 @@ public class Observations extends javax.swing.JInternalFrame {
 
             con.modifyDB("INSERT INTO nota_materia_periodo VALUES "
                     + "( NULL ," + grade + ",'" + rank + "','" + observation + "',"
-                    + codeStudent + "," + idPer + "," + idSubj + ")");
+                    + codeStudent + "," + idPeriod + "," + idSubject + ")");
         }
 
     }//GEN-LAST:event_btnSaveActionPerformed
@@ -270,9 +266,8 @@ public class Observations extends javax.swing.JInternalFrame {
     void loadGroup(int code) {
         try {
             ResultSet rs = con.consultDB("SELECT CONCAT(usu.PrimerNombre,' ',usu.SegundoNombre,' ',"
-                    + "usu.PrimerApellido,' ',usu.SegundoApellido) as nomDoc,"
-                    + "COUNT(*) grupos FROM grupo "
-                    + "INNER JOIN docente_materia_grupo as dmg "
+                    + "usu.PrimerApellido,' ',usu.SegundoApellido) as nomDoc, Nombre FROM grupo "
+                    + "INNER JOIN Docente_Materia_Grupo as dmg "
                     + "ON grupo.idGrupo = dmg.Grupo_id "
                     + "INNER JOIN docente as doc "
                     + "ON doc.Codigo = dmg.Docente_id "
@@ -284,63 +279,27 @@ public class Observations extends javax.swing.JInternalFrame {
             cboCourse.setModel(model1);
             model1.addElement("Seleccione un grado");
             while (rs.next()) {
-                int groups = rs.getInt("grupos");
-                idGroup = new String[groups + 1];
+                model1.addElement(rs.getString("Nombre"));
                 lbTeachers.setText(rs.getString("nomDoc"));
-            }
-        } catch (Exception e) {
-        }
-
-        try {
-            int i = 1;
-            ResultSet rst = con.consultDB("SELECT idGrupo, Nombre FROM grupo "
-                    + "INNER JOIN docente_materia_grupo as dmg "
-                    + "ON grupo.idGrupo = dmg.Grupo_id "
-                    + "WHERE dmg.Docente_id = " + code + " "
-                    + "GROUP BY dmg.Grupo_id");
-            model1 = new DefaultComboBoxModel();
-            cboCourse.setModel(model1);
-            model1.addElement("Seleccione un grado");
-            while (rst.next()) {
-                model1.addElement(rst.getString("Nombre"));
-                idGroup[i] = rst.getString("idGrupo");
-                i++;
             }
         } catch (Exception e) {
         }
     }
 
     void loadSubjects(String value) {
-        try {
-            ResultSet rs = con.consultDB("SELECT COUNT(*) cantidad "
-                    + "FROM materia as mat \n"
-                    + "INNER JOIN docente_materia_grupo as dmg "
-                    + "ON mat.idMateria = dmg.Materia_id "
-                    + "INNER JOIN grupo as gru "
-                    + "ON dmg.Grupo_id = gru.idGrupo "
-                    + "WHERE gru.idGrupo = " + value);
-            model2 = new DefaultComboBoxModel();
-            while (rs.next()) {
-                int subjects = rs.getInt("cantidad");
-                idSubjects = new String[subjects];
-            }
-        } catch (Exception e) {
-        }
+
         cboSubjects.removeAllItems();
         try {
-            int i = 0;
-            ResultSet rst = con.consultDB("SELECT  mat.idMateria, mat.Nombre "
+            ResultSet rs = con.consultDB("SELECT  mat.Nombre "
                     + "FROM materia as mat "
-                    + "INNER JOIN docente_materia_grupo as dmg "
+                    + "INNER JOIN Docente_Materia_Grupo as dmg "
                     + "ON mat.idMateria = dmg.Materia_id "
                     + "INNER JOIN grupo as gru "
                     + "ON dmg.Grupo_id = gru.idGrupo "
-                    + "WHERE gru.idGrupo = " + value);
+                    + "WHERE gru.Nombre = '" + value + "'");
             model2 = new DefaultComboBoxModel();
-            while (rst.next()) {
-                model2.addElement(rst.getString("mat.Nombre"));
-                idSubjects[i] = rst.getString("mat.idMateria");
-                i++;
+            while (rs.next()) {
+                model2.addElement(rs.getString("mat.Nombre"));
             }
             cboSubjects.setModel(model2);
 
@@ -350,24 +309,12 @@ public class Observations extends javax.swing.JInternalFrame {
 
     void loadPeriod() {
         try {
-            ResultSet rs = con.consultDB("SELECT COUNT(*) cantidad FROM periodo ");
+            ResultSet rs = con.consultDB("SELECT Nombre FROM periodo");
             model3 = new DefaultComboBoxModel();
+            cboPeriod.setModel(model3);
             model3.addElement("Seleccione el periodo");
-            cboPeriod.setModel(model3);
             while (rs.next()) {
-                int period = rs.getInt("cantidad");
-                idPeriod = new String[period + 1];
-            }
-        } catch (Exception e) {
-        }
-        try {
-            int i = 1;
-            ResultSet rst = con.consultDB("SELECT idperiodo, Nombre FROM periodo ");
-            cboPeriod.setModel(model3);
-            while (rst.next()) {
-                model3.addElement(rst.getString("Nombre"));
-                idPeriod[i] = rst.getString("idPeriodo");
-                i++;
+                model3.addElement(rs.getString("Nombre"));
             }
         } catch (Exception e) {
         }
@@ -386,58 +333,49 @@ public class Observations extends javax.swing.JInternalFrame {
     }
 
     void loadTables(String value, String value2) {
-        if (value2 == null) {
-            String title[] = {"NUIP", "Nombre", "Logro 1", "Definitiva"};
-            tbModel1 = new DefaultTableModel(null, title);
-            tbData.setModel(tbModel1);
-
-            String title2[] = {"Observaciones"};
-            tbModel2 = new DefaultTableModel(null, title2);
-            tbObservations.setModel(tbModel2);
+        int i = 1;
+        try {
+            ResultSet query = con.consultDB("SELECT COUNT(log.idLogro) as cantidad "
+                    + "FROM logro as log "
+                    + "INNER JOIN periodo as per "
+                    + "ON per.idperiodo = log.periodo_id "
+                    + "INNER JOIN materia as mat "
+                    + "ON mat.idMateria = log.Materia_id "
+                    + "WHERE per.Nombre = '" + value + "' "
+                    + "AND mat.Nombre = '" + value2 + "'");
+            while (query.next()) {
+                if (Integer.parseInt(query.getString("cantidad")) > 0) {
+                    i = Integer.parseInt(query.getString("cantidad"));
+                }
+            }
+        } catch (SQLException ex) {
         }
+
+        String title[] = new String[3 + i];
+
+        for (int j = 0; j < title.length; j++) {
+            if (j == 0) {
+                title[j] = "NUIP";
+            }
+
+            if (j == 1) {
+                title[j] = "Nombre";
+            }
+            if ((j > 1) && (j < title.length - 1)) {
+                for (int k = 0; k < i; k++) {
+                    title[j] = "Logro " + (k + 1);
+                    j++;
+                }
+            }
+            if (j == title.length - 1) {
+                title[j] = "Definitiva";
+            }
+        }
+
+        tbModel1 = new DefaultTableModel(null, title);
+        tbData.setModel(tbModel1);
+
         if (value2 != null) {
-            int i = 1;
-            try {
-                ResultSet query = con.consultDB("SELECT COUNT(log.idLogro) as cantidad "
-                        + "FROM logro as log "
-                        + "INNER JOIN periodo as per "
-                        + "ON per.idperiodo = log.periodo_id "
-                        + "INNER JOIN materia as mat "
-                        + "ON mat.idMateria = log.Materia_id "
-                        + "WHERE per.idperiodo = " + value + " "
-                        + "AND mat.idMateria = " + value2);
-                while (query.next()) {
-                    if (Integer.parseInt(query.getString("cantidad")) > 0) {
-                        i = Integer.parseInt(query.getString("cantidad"));
-                    }
-                }
-            } catch (SQLException ex) {
-            }
-
-            String title[] = new String[3 + i];
-
-            for (int j = 0; j < title.length; j++) {
-                if (j == 0) {
-                    title[j] = "NUIP";
-                }
-
-                if (j == 1) {
-                    title[j] = "Nombre";
-                }
-                if ((j > 1) && (j < title.length - 1)) {
-                    for (int k = 0; k < i; k++) {
-                        title[j] = "Logro " + (k + 1);
-                        j++;
-                    }
-                }
-                if (j == title.length - 1) {
-                    title[j] = "Definitiva";
-                }
-            }
-
-            tbModel1 = new DefaultTableModel(null, title);
-            tbData.setModel(tbModel1);
-
             String reg[] = new String[title.length];
             try {
                 int j = 2;
@@ -453,8 +391,8 @@ public class Observations extends javax.swing.JInternalFrame {
                         + "ON est.Codigo = ntl.Estudiante_Codigo "
                         + "INNER JOIN usuario as usu "
                         + "ON usu.NUIP = est.Codigo "
-                        + "WHERE per.idperiodo = " + value + " "
-                        + "AND mat.idMateria = " + value2 + " "
+                        + "WHERE per.Nombre = '" + value + "' "
+                        + "AND mat.Nombre = '" + value2 + "' "
                         + "GROUP BY log.idLogro "
                 );
                 while (rst.next()) {
@@ -469,7 +407,7 @@ public class Observations extends javax.swing.JInternalFrame {
             try {
                 ResultSet rs = con.consultDB("SELECT usu.NUIP as Nuip, "
                         + "CONCAT(usu.PrimerApellido,' ',usu.PrimerNombre) as Nombre, "
-                        + "FORMAT(AVG(ntl.Calificacion),1) as Definitiva "
+                        + "AVG(ntl.Calificacion) as Definitiva "
                         + "FROM logro as log "
                         + "INNER JOIN periodo as per "
                         + "ON per.idperiodo = log.periodo_id "
@@ -481,18 +419,17 @@ public class Observations extends javax.swing.JInternalFrame {
                         + "ON est.Codigo = ntl.Estudiante_Codigo "
                         + "INNER JOIN usuario as usu "
                         + "ON usu.NUIP = est.Codigo "
-                        + "WHERE per.idperiodo = " + value + " "
-                        + "AND mat.idMateria = " + value2 + " "
+                        + "WHERE per.Nombre = '" + value + "' "
+                        + "AND mat.Nombre = '" + value2 + "' "
                         + "GROUP BY usu.NUIP "
                 );
 
                 while (rs.next()) {
-                    format = new DecimalFormat("#.0");
+
                     reg[0] = rs.getString("Nuip");
                     reg[1] = rs.getString("Nombre");
-
-                    double grade = rs.getDouble("Definitiva");
-                    reg[reg.length - 1] = "" + grade;
+                    String grade = String.format("%.1f", Double.parseDouble(rs.getString("Definitiva")));
+                    reg[reg.length - 1] = grade;
                     tbModel1.addRow(reg);
                 }
 
@@ -502,73 +439,36 @@ public class Observations extends javax.swing.JInternalFrame {
             /*
              Cargar Tabla Observaciones
              */
-            int obs = 0;
+            int countRow = tbData.getRowCount();
+            int rowObservations = countRow - 1;
+            int row = 0;
             String title2[] = {"Observaciones"};
+            String reg2[] = new String[1];
+
             tbModel2 = new DefaultTableModel(null, title2);
+            
+            tbModel2.setRowCount(countRow);
             try {
-                ResultSet query = con.consultDB("SELECT COUNT(Observacion) as cantidad FROM nota_materia_periodo "
-                        + "WHERE Periodo_id = " + value + " "
-                        + "AND Materia_id = " + value2);
-                while (query.next()) {
-                    if (Integer.parseInt(query.getString("cantidad")) > 0) {
-                        obs = Integer.parseInt(query.getString("cantidad"));
+                ResultSet rst = con.consultDB("SELECT Observacion FROM nota_materia_periodo as nmp "
+                        + "INNER JOIN periodo as per "
+                        + "ON per.idperiodo = nmp.Periodo_id "
+                        + "INNER JOIN materia as mat "
+                        + "ON mat.idMateria = nmp.Materia_id "
+                        + "WHERE per.Nombre = '" + value + "' "
+                        + "AND mat.Nombre = '" + value2 + "' "
+                        + "ORDER BY id DESC");
+                //rowObservations++;
+                while (rst.next()) {
+
+                    reg2[0] = rst.getString("Observacion");
+                    while (row <= rowObservations) {
+                        tbModel2.setValueAt(reg2[0], row, 0);
+                        row++;
                     }
                 }
+                tbObservations.setModel(tbModel2);
             } catch (Exception e) {
             }
-            String reg2[] = new String[1];
-            if (obs == 0) {
-                int countRow = tbData.getRowCount();
-                tbModel2.setRowCount(countRow);
-                tbObservations.setModel(tbModel2);
-            } else if (obs > 0 && obs != 1) {
-                int countRow = tbData.getRowCount();
-                tbModel2.setRowCount(countRow);
-                int j = 0;
-                try {
-                    ResultSet rs = con.consultDB("SELECT COUNT(est.Codigo), nmp.Observacion "
-                            + "FROM estudiante as est "
-                            + "LEFT JOIN nota_materia_periodo as nmp "
-                            + "ON est.Codigo = nmp.Estudiante_Codigo "
-                            + "WHERE nmp.Periodo_id = " + value + " "
-                            + "And nmp.Materia_id = " + value2 + " "
-                            + "or nmp.Materia_id is null "
-                            + "group by  est.Codigo "
-                            + "order by est.Codigo");
-
-                    while (rs.next()) {
-                        reg2[0] = rs.getString("nmp.Observacion");
-                        tbModel2.setValueAt(reg2[0], j, 0);
-                        j++;
-                    }
-                    tbObservations.setModel(tbModel2);
-                } catch (Exception e) {
-                }
-            } else if (obs == 1) {
-                int countRow = tbData.getRowCount();
-                tbModel2.setRowCount(countRow);
-                int j = 0;
-                try {
-                    ResultSet rs = con.consultDB("SELECT COUNT(est.Codigo), nmp.Observacion "
-                            + "FROM estudiante as est "
-                            + "RIGHT JOIN nota_materia_periodo as nmp "
-                            + "ON est.Codigo = nmp.Estudiante_Codigo "
-                            + "WHERE nmp.Periodo_id = " + value + " "
-                            + "And nmp.Materia_id = " + value2 + " "
-                            + "or nmp.Materia_id is null "
-                            + "group by  nmp.Observacion "
-                            + "order by est.Codigo");
-
-                    while (rs.next()) {
-                        reg2[0] = rs.getString("nmp.Observacion");
-                        tbModel2.setValueAt(reg2[0], j, 0);
-                        j++;
-                    }
-                    tbObservations.setModel(tbModel2);
-                } catch (Exception e) {
-                }
-            }
-
         }
     }
 
