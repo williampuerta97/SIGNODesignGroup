@@ -258,8 +258,8 @@ public class Observations extends javax.swing.JInternalFrame {
      */
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
 
-        int idSubj = Integer.parseInt(idSubjects[cboSubjects.getSelectedIndex()]);
-        int idPer = Integer.parseInt(idPeriod[cboPeriod.getSelectedIndex()]);
+        String idSubj = idSubjects[cboSubjects.getSelectedIndex()];
+        String idPer = idPeriod[cboPeriod.getSelectedIndex()];
         String rank = "";
         String observation = "";
 
@@ -277,7 +277,8 @@ public class Observations extends javax.swing.JInternalFrame {
                     + "( NULL ," + grade + ",'" + rank + "','" + observation + "',"
                     + codeStudent + "," + idPer + "," + idSubj + ")");
         }
-
+        JOptionPane.showMessageDialog(rootPane,"Los datos se guardaron exitosamente.");
+        loadTables(idPer, idSubj);
     }//GEN-LAST:event_btnSaveActionPerformed
 
     /**
