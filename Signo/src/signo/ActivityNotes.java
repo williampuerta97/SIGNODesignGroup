@@ -320,7 +320,15 @@ public class ActivityNotes extends javax.swing.JInternalFrame {
             model.setRowCount(0);
         }    
     }//GEN-LAST:event_cboActivityItemStateChanged
-
+/**
+ * @author Grupo diseño
+ * @version 1.0
+ * Este método lo que hace es cargar el jComboBox de grados dependiendo del usuario
+ * que ingrese al sistema, si es docente, cargará sus grupos, si es administrador cargará
+ * todos los grados
+ * @param code Recibe como parámetro en un int, el código de la persona que inicia sesión
+ * 
+ */
 void loadUser(int code){
     try {
         ResultSet rs = con.consultDB("SELECT CONCAT(usu.PrimerNombre, ' ', "
