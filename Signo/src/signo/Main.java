@@ -16,7 +16,7 @@ public class Main extends javax.swing.JFrame {
     /**
      * Creates new form Menu
      */
-   public static int id = 2222;
+   public static int id = 1111;
     public Main() {
         initComponents();
        
